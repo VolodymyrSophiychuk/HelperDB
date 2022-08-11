@@ -1,0 +1,27 @@
+﻿@page
+@model DBHelper.Pages.AccountsModel
+@{
+    ViewData["Title"] = "Accounts";
+}
+
+<div class="grid grid--accounts">
+    <p>Id</p>
+    <p>Name</p>
+    <p>ContactID</p>
+    @{
+        foreach (var data in Model.accounts)
+        {
+            <p>@data.AccountId</p>
+            <p>@data.Name</p>
+            <p>@data.ContactId</p>
+        }
+    }
+</div>
+
+<form method="post">
+    <div class="grid grid--accounts grid--form">
+        <input type="text" placeholder="Account name" name="Name" />
+        <input type="text" placeholder="Contact id"  name="ContactId" />
+        <button type="submit">Send to database</button>
+    </div>
+</form>

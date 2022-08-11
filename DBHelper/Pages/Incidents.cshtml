@@ -1,0 +1,30 @@
+﻿@page
+@model DBHelper.Pages.IncidentsModel
+@{
+    ViewData["Title"] = "Incidents";
+}
+
+<div class="grid grid-incidents">
+    <p>Id</p>
+    <p>Name</p>
+    <p>Description</p>
+    <p>AccountId</p>
+    @{
+        foreach (var data in Model.incidents)
+        {
+            <p>@data.IncidentId</p>
+            <p>@data.Name</p>
+            <p>@data.Description</p>
+            <p>@data.AccountId</p>
+        }
+    }
+</div>
+
+<form method="post" id="form">
+    <div class="grid grid-incidents grid--form">
+        <input type="text" placeholder="Incident name" name="Name" />
+        <input type="text" placeholder="Description"  name="Description" />
+        <input type="text" placeholder="Account id"  name="AccountId" />
+        <button type="submit">Send to database</button>
+    </div>
+</form>

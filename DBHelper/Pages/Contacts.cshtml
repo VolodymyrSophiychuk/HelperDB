@@ -1,0 +1,30 @@
+﻿@page
+@model DBHelper.Pages.ContactsModel
+@{
+    ViewData["Title"] = "Contacts";
+}
+
+<div class="grid grid--contacts">
+    <p>Id</p>
+    <p>Firstname</p>
+    <p>Lastname</p>
+    <p>Email</p>
+    @{
+        foreach (var data in Model.contacts)
+        {
+            <p>@data.ContactId</p>
+            <p>@data.Firstname</p>
+            <p>@data.Lastname</p>
+            <p>@data.Email</p>
+        }
+    }
+</div>
+
+<form method="post">
+    <div class="grid grid--contacts grid--form">
+        <input type="text" placeholder="Firstname" name="Firstname" />
+        <input type="text" placeholder="Lastname"  name="Lastname" />
+        <input type="text" placeholder="Email"  name="Email" />
+        <button type="submit">Send to database</button>
+    </div>
+</form>
