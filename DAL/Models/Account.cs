@@ -9,9 +9,10 @@ namespace DAL.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int AccountId { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Account name is required")]
         public string? Name { get; set; }
 
+        [Range(1, 10000, ErrorMessage = "Contact identificator is required")]
         public int ContactId { get; set; }
         public virtual Contact? Contact { get; set; }
 

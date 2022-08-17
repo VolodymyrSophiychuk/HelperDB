@@ -1,0 +1,128 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Contacts</title>
+
+    <link href="css/styles.css" rel="stylesheet" />
+</head>
+<body>
+    <header>
+        <a href="incidents.html">Incidents</a>
+        <a href="accounts.html">Accounts</a>
+        <a href="contacts.html">Contacts</a>
+    </header>
+
+    <div class="grid grid--contacts" id="grid">
+        <p>Id</p>
+        <p>Firstname</p>
+        <p>Lastname</p>
+        <p>Email</p>
+    </div>
+
+    <form method="post" name="model">
+        <div class="grid grid--contacts grid--form">
+            <input type="text" placeholder="Firstname" name="Firstname" />
+            <input type="text" placeholder="Lastname" name="Lastname" />
+            <input type="text" placeholder="Email" name="Email" />
+            <button type="submit">Send to database</button>
+        </div>
+    </form>
+
+    <script>
+        document.forms["model"].addEventListener("submit", e => {
+            e.preventDefault();
+
+            const form = document.forms["model"];
+            const firstname = form.elements["Firstname"].value;
+            const lastname = form.elements["Lastname"].value;
+            const email = form.elements["Email"].value;
+
+            CreateContact(firstname, lastname, email);
+        });
+
+        async function GetContacts() {
+            Refresh();
+
+            const response = await fetch("/contacts", {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+
+            if (response.ok === true) {
+                const contacts = await response.json();
+
+                contacts.forEach(contact => {
+                    let grid = document.getElementById("grid");
+
+                    let id = document.createElement('p');
+                    let firstname = document.createElement('p');
+                    let lastname = document.createElement('p');
+                    let email = document.createElement('p');
+
+                    id.innerHTML = contact.contactId;
+                    firstname.innerHTML = contact.firstname;
+                    lastname.innerHTML = contact.lastname;
+                    email.innerHTML = contact.email;
+
+                    grid.append(id, firstname, lastname, email);
+                });
+            }
+        }
+        async function CreateContact(firstname, lastname, email) {
+            const response = await fetch("/contacts", {
+                method: "POST",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    Firstname: firstname,
+                    Lastname: lastname,
+                    Email: email
+                })
+            });
+
+            if (response.ok !== true) {
+                const errors = await response.json();
+                console.log(errors);
+                Validate(errors);
+            }
+
+            GetContacts();
+        }
+
+        function Refresh() {
+            let form = document.forms["model"];
+            let grid = document.getElementById("grid");
+
+            for (var trigger = grid.children.length - 1; trigger > 3; trigger--) {
+                grid.removeChild(grid.lastChild);
+            }
+
+            form.elements["Firstname"].value = "";
+            form.elements["Lastname"].value = "";
+            form.elements["Email"].value = "";
+        }
+
+        function Validate(errors) {
+            let form = document.forms["model"];
+
+            if (errors.errors["Firstname"] !== undefined)
+                form.elements["Firstname"].placeholder = errors.errors["Firstname"][0];
+            else
+                form.elements["Firstname"].placeholder = "Firstname";
+
+            if (errors.errors["Lastname"] !== undefined)
+                form.elements["Lastname"].placeholder = errors.errors["Lastname"][0];
+            else
+                form.elements["Lastname"].placeholder = "Lastname";
+
+            if (errors.errors["Email"] !== undefined)
+                form.elements["Email"].placeholder = errors.errors["Email"];
+            else
+                form.elements["Email"].placeholder = "Email";
+        }
+
+        GetContacts();
+    </script>
+</body>
+</html>

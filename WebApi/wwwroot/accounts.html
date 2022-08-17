@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Accounts</title>
+
+    <link href="css/styles.css" rel="stylesheet" />
+</head>
+<body>
+    <header>
+        <a href="incidents.html">Incidents</a>
+        <a href="accounts.html">Accounts</a>
+        <a href="contacts.html">Contacts</a>
+    </header>
+
+    <div class="grid grid--accounts" id="grid">
+        <p>Id</p>
+        <p>Name</p>
+        <p>ContactId</p>
+    </div>
+
+    <form method="post" name="model">
+        <div class="grid grid--accounts grid--form">
+            <input type="text" placeholder="Name" name="Name" />
+            <input type="text" placeholder="Contact id" name="ContactId" />
+            <button type="submit">Send to database</button>
+        </div>
+    </form>
+
+    <script>
+        document.forms["model"].addEventListener("submit", e => {
+            e.preventDefault();
+
+            const form = document.forms["model"];
+            const name = form.elements["Name"].value;
+            const contactId = form.elements["ContactId"].value == "" ? 0 : form.elements["ContactId"].value;
+
+            CreateAccount(name, contactId);
+        });
+
+        async function GetAccounts() {
+            Refresh();
+
+            const response = await fetch("/accounts", {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+
+            if (response.ok === true) {
+                const accounts = await response.json();
+
+                accounts.forEach(account => {
+                    let grid = document.getElementById("grid");
+
+                    let id = document.createElement('p');
+                    let name = document.createElement('p');
+                    let contactId = document.createElement('p');
+
+                    id.innerHTML = account.accountId;
+                    name.innerHTML = account.name;
+                    contactId.innerHTML = account.contactId;
+
+                    grid.append(id, name, contactId);
+                });
+            }
+        }
+        async function CreateAccount(name, contactId) {
+            const response = await fetch("/accounts", {
+                method: "POST",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    Name: name,
+                    ContactId: contactId
+                })
+            });
+
+            if (response.ok !== true) {
+                const errors = await response.json();
+                console.log(errors);
+                Validate(errors);
+            }
+
+            GetAccounts();
+        }
+
+        function Refresh() {
+            let grid = document.getElementById("grid");
+            let form = document.forms["model"];
+
+            for (var trigger = grid.children.length - 1; trigger > 2; trigger--) {
+                grid.removeChild(grid.lastChild);
+            }
+
+            form.elements["Name"].value = "";
+            form.elements["ContactId"].value = "";
+        }
+
+        function Validate(errors) {
+            let form = document.forms["model"];
+
+            if (errors.errors["Name"] !== undefined)
+                form.elements["Name"].placeholder = errors.errors["Name"][0];
+            else
+                form.elements["Name"].placeholder = "Name";
+
+            if (errors.errors["ContactId"] !== undefined)
+                form.elements["ContactId"].placeholder = errors.errors["ContactId"][0];
+            else
+                form.elements["ContactId"].placeholder = "Contact id";
+        }
+
+        GetAccounts();
+    </script>
+</body>
+</html>

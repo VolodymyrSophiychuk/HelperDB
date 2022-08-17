@@ -1,0 +1,129 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Incidents</title>
+
+    <link href="css/styles.css" rel="stylesheet" />
+</head>
+<body>
+    <header>
+        <a href="incidents.html">Incidents</a>
+        <a href="accounts.html">Accounts</a>
+        <a href="contacts.html">Contacts</a>
+    </header>
+
+    <div class="grid grid--incidents" id="grid">
+        <p>Id</p>
+        <p>Name</p>
+        <p>Description</p>
+        <p>AccountId</p>
+    </div>
+
+    <form method="post" name="model">
+        <div class="grid grid--incidents grid--form">
+            <input type="text" placeholder="Name" name="Name" />
+            <input type="text" placeholder="Description" name="Description" />
+            <input type="text" placeholder="Account id" name="AccountId" />
+            <button type="submit">Send to database</button>
+        </div>
+    </form>
+
+    <script>
+        document.forms["model"].addEventListener("submit", e => {
+            e.preventDefault();
+
+            const form = document.forms["model"];
+            const name = form.elements["Name"].value;
+            const description = form.elements["Description"].value;
+            const accountId = form.elements["AccountId"].value == "" ? 0 : form.elements["AccountId"].value;
+
+            CreateIncident(name, description, accountId);
+        });
+
+        async function GetIncidents() {
+            Refresh();
+
+            const response = await fetch("/incidents", {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+
+            if (response.ok === true) {
+                const incidents = await response.json();
+                let grid = document.getElementById("grid");
+
+                incidents.forEach(incident => {
+                    let grid = document.getElementById("grid");
+
+                    let id = document.createElement('p');
+                    let name = document.createElement('p');
+                    let description = document.createElement('p');
+                    let accountId = document.createElement('p');
+
+                    id.innerHTML = incident.incidentId;
+                    name.innerHTML = incident.name;
+                    description.innerHTML = incident.description;
+                    accountId.innerHTML = incident.accountId;
+
+                    grid.append(id, name, description, accountId);
+                });
+            }
+        }
+        async function CreateIncident(name, description, accountId) {
+            const response = await fetch("/incidents", {
+                method: "POST",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    Name: name,
+                    Description: description,
+                    AccountId: accountId
+                })
+            });
+
+            if (response.ok !== true) {
+                const errors = await response.json();
+                console.log(errors);
+                Validate(errors);
+            }
+
+            GetIncidents();
+        }
+
+        function Refresh() {
+            let grid = document.getElementById("grid");
+            let form = document.forms["model"];
+
+            for (var trigger = grid.children.length - 1; trigger > 3; trigger--) {
+                grid.removeChild(grid.lastChild);
+            }
+
+            form.elements["Name"].value = "";
+            form.elements["Description"].value = "";
+            form.elements["AccountId"].value = "";
+        }
+
+        function Validate(errors) {
+            let form = document.forms["model"];
+
+            if (errors.errors["Name"] !== undefined)
+                form.elements["Name"].placeholder = errors.errors["Name"][0];
+            else
+                form.elements["Name"].placeholder = "Name";
+
+            if (errors.errors["Description"] !== undefined)
+                form.elements["Description"].placeholder = errors.errors["Description"][0];
+            else
+                form.elements["Description"].placeholder = "Description";
+
+            if (errors.errors["AccountId"] !== undefined)
+                form.elements["AccountId"].placeholder = errors.errors["AccountId"];
+            else
+                form.elements["AccountId"].placeholder = "Account id";
+        }
+
+        GetIncidents();
+    </script>
+</body>
+</html>

@@ -7,11 +7,12 @@ namespace DAL.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int IncidentId { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Incident name is required")]
         public string? Name { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Incident description is required")]
         public string? Description { get; set; }
 
+        [Range(1, 10000, ErrorMessage = "Contact identificator is required")]
         public int AccountId { get; set; }
         public virtual Account? Account { get; set; }
     }
