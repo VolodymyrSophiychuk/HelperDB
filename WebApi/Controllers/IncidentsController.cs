@@ -25,7 +25,7 @@ namespace WebApi.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (_context.Accounts?.Where(el => el.AccountId == incident.AccountId).Select(el => el).ToList().Count != 0)
+            if (_context.Accounts?.Where(el => el.AccountId == incident.AccountId).SingleOrDefault() != null)
             {
                 _context.Incidents?.Add(new Incident { Name = incident.Name, Description = incident.Description, AccountId = incident.AccountId });
 

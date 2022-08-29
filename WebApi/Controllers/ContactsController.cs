@@ -23,45 +23,43 @@ namespace WebApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Contact>> Post(Contact contact)
         {
+            string pattern = @"^\w+([\.-]?\w+)*";
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            try
-            {
-                Contact? @new = _context.Contacts?.Where(el => el.Email == contact.Email).Select(id => id).Single();
+            Contact? @new = _context.Contacts?.Where(el => el.Email == contact.Email).SingleOrDefault();
 
+            if (@new?.Email == contact.Email)
+            {
                 @new.Firstname = contact.Firstname;
                 @new.Lastname = contact.Lastname;
                 @new.Email = contact.Email;
 
                 await _context.SaveChangesAsync();
             }
-            catch (InvalidOperationException)
+            else
             {
-                try
+                _context.Contacts?.Add(new Contact { Firstname = contact.Firstname, Lastname = contact.Lastname, Email = contact.Email });
+
+                await _context.SaveChangesAsync();
+
+                _context.Accounts?.Add(new Account
                 {
-                    _context.Contacts?.Add(new Contact { Firstname = contact.Firstname, Lastname = contact.Lastname, Email = contact.Email });
+                    Name = Regex.Match(contact.Email, pattern).Value,
+                    ContactId = _context.Contacts.OrderBy(el => el.ContactId).Last().ContactId
+                });
 
-                    await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
-                    _context.Accounts?.Add(new Account
-                    {
-                        Name = Regex.Match(contact.Email, @"[A-Za-z0-9._%+-]+").Value,
-                        ContactId = _context.Contacts.OrderBy(el => el.ContactId).Last().ContactId
-                    });
+                _context.Incidents?.Add(new Incident
+                {
+                    Name = string.Concat(Regex.Match(contact.Email, pattern).Value, " connection"),
+                    Description = string.Concat(Regex.Match(contact.Email, pattern).Value, " was successfully connected"),
+                    AccountId = _context.Accounts.OrderBy(el => el.AccountId).Last().AccountId
+                });
 
-                    await _context.SaveChangesAsync();
-
-                    _context.Incidents?.Add(new Incident
-                    {
-                        Name = string.Concat(Regex.Match(contact.Email, @"[A-Za-z0-9._%+-]+").Value, " connection"),
-                        Description = string.Concat(Regex.Match(contact.Email, @"[A-Za-z0-9._%+-]+").Value, " was successfully connected"),
-                        AccountId = _context.Accounts.OrderBy(el => el.AccountId).Last().AccountId
-                    });
-
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateException) { }
+                await _context.SaveChangesAsync();
             }
 
             return Ok(contact);

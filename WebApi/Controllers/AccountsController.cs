@@ -25,9 +25,9 @@ namespace WebApi.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (_context.Contacts?.Where(el => el.ContactId == account.ContactId).Select(el => el).ToList().Count != 0)
+            if (_context.Contacts?.Where(el => el.ContactId == account.ContactId).SingleOrDefault() != null)
             {
-                if (_context.Accounts?.Where(el => el.Name == account.Name).Select(el => el).ToList().Count == 0)
+                if (_context.Accounts?.Where(el => el.Name == account.Name).SingleOrDefault() == null)
                 {
                     _context.Accounts?.Add(new Account { Name = account.Name, ContactId = account.ContactId });
 

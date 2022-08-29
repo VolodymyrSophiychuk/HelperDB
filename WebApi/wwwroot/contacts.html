@@ -83,7 +83,6 @@
 
             if (response.ok !== true) {
                 const errors = await response.json();
-                console.log(errors);
                 Validate(errors);
             }
 
